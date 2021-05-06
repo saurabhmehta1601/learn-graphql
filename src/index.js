@@ -1,37 +1,62 @@
-const {ApolloServer,gql} = require("apollo-server")
+// To be continued
+const {ApolloServer,gql,PubSub} = require("apollo-server")
 
 // Graphql schemas
 const typeDefs = gql`
-    
     type Query {
-        hello( name: String! ): String!,
-        parent : String,
-        context : String,
-        info:String
+    name:String
+} 
+
+    type Mutation {
+    register : RegisterResponse
+   }
+
+    type Subscription {
+    newUser : User!
+   }
+
+    type RegisterResponse {
+        status : String! ,
+        user(name:String!,password:String!)  : User 
     }
 
-    
+    type User   {
+        name:String!,
+        password:String!
+   }
 `
+// Key for subscription type
+const NEW_USER = "NEW_USER"
 
-// resolver function take arguments as (parent,args,context,info)
+// subscriptions are to add real time functionality to api
+// resolver functions can be async too like normal functions 
+// Inside Subscribe instead of passing fields with value as functions we pass value as object with function named subscribe
 const resolvers = {
-    Query : {
-        // Example on how to use args in resolver arguments 
-        hello : (parent,{name}) => ` Hello ${name} `,
-
-        // arguments in resolver
-        parent: (parent) => console.dir("parent object is ",parent) , 
-        context : (parent,args,context) =>{
-            // console.log("context object ",context);
-            // console.log("request object ",context.req);
-            console.log("response object  ",context.res);
-        },
-        info : (parent,args,context,info) =>{
-            console.log("info object  ",info);
+    Subscription :  {
+        newUser : {
+            subscribe : (_,__,{pubsub}) => {
+                return  pubsub.asyncIterator(NEW_USER)
+            }
+        }
+    },
+    User : (parent,{name,password}) =>{
+        return {name , password}
+    },
+    Mutation : {
+        register : () =>{
+            pubsub.publish(NEW_USER)
+            return {
+                status: " registered  ", 
+                user : (_,{name,password}) =>  {
+                    name,
+                    password
+                }
+            }
         }
     }
-}   
+    }   
+    
+const pubsub =  new PubSub()
 
-
-const server = new ApolloServer( {typeDefs,resolvers,context : ({req,res})=>{ return {req,res}} } )
+const server = new ApolloServer( {typeDefs,resolvers,context : ({req,res})=>{ return {req,res,pubsub}} } )
 server.listen().then(({url}) =>console.log(`>Running Apollo server at ${url}`))
