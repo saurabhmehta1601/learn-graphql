@@ -1,68 +1,37 @@
-const { ApolloServer, gql } = require("apollo-server");
+const {ApolloServer,gql} = require("apollo-server")
 
-// graphql schema
-// nesting schemas
-
-// Query run parallel while Mutation run sequentially
+// Graphql schemas
 const typeDefs = gql`
-
-    input userArgs {
-    username: String!,
-    password: String!
+    
+    type Query {
+        hello( name: String! ): String!,
+        parent : String,
+        context : String,
+        info:String
     }
 
-  type Query{
-    hello  : String!,
-    profile(username : String!,age : Int!) : Profile!
-  }
+    
+`
 
-  type Profile {
-      name : String!,
-      age : Int!
-  }
-
-  type User {
-    id: ID!
-    name: String!
-  }
-
-  type Error {
-    message: String
-  }
-
-  type RegisterResponse {
-    errors: [Error]
-    status: Int!
-  }
-
-  type Mutation {
-    register: RegisterResponse!,
-    login(creds : userArgs ) : Boolean!
-  }
-`;
-
-// resolver
+// resolver function take arguments as (parent,args,context,info)
 const resolvers = {
-  Query: {
-    hello: () => "hello graphql !!",
-    profile : ()=>({
-        name:"bittu",
-        age:25
-    })
+    Query : {
+        // Example on how to use args in resolver arguments 
+        hello : (parent,{name}) => ` Hello ${name} `,
 
-  },
-  Mutation: {
-    register: () => ({
-      errors: [{message: " Sorry error"}],
-      status: 200 ,
-    }),
-    login : () => true 
-  },
-};
+        // arguments in resolver
+        parent: (parent) => console.dir("parent object is ",parent) , 
+        context : (parent,args,context) =>{
+            // console.log("context object ",context);
+            // console.log("request object ",context.req);
+            console.log("response object  ",context.res);
+        },
+        info : (parent,args,context,info) =>{
+            console.log("info object  ",info);
+        }
+    }
+}   
 
-// server instance
-const server = new ApolloServer({ typeDefs, resolvers });
 
-server
-  .listen()
-  .then(({ url }) => console.log(`>Apollo server runnning at ${url}`));
+const server = new ApolloServer( {typeDefs,resolvers,context : ({req,res})=>{ return {req,res}} } )
+server.listen().then(({url}) =>console.log(`>Running Apollo server at ${url}`))
