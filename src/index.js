@@ -3,10 +3,22 @@ const { ApolloServer, gql } = require("apollo-server");
 // graphql schema
 // nesting schemas
 
+// Query run parallel while Mutation run sequentially
 const typeDefs = gql`
 
+    input userArgs {
+    username: String!,
+    password: String!
+    }
+
   type Query{
-    hello  : String!
+    hello  : String!,
+    profile(username : String!,age : Int!) : Profile!
+  }
+
+  type Profile {
+      name : String!,
+      age : Int!
   }
 
   type User {
@@ -24,7 +36,8 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    register: RegisterResponse!
+    register: RegisterResponse!,
+    login(creds : userArgs ) : Boolean!
   }
 `;
 
@@ -32,12 +45,18 @@ const typeDefs = gql`
 const resolvers = {
   Query: {
     hello: () => "hello graphql !!",
+    profile : ()=>({
+        name:"bittu",
+        age:25
+    })
+
   },
   Mutation: {
     register: () => ({
-      errors: null,
+      errors: [{message: " Sorry error"}],
       status: 200 ,
     }),
+    login : () => true 
   },
 };
 
