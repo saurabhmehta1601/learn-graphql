@@ -4,60 +4,47 @@ const { ApolloServer, gql } = require("apollo-server");
 // nesting schemas
 
 // Query run parallel while Mutation run sequentially
+// Define in schema what arguments it takes
 const typeDefs = gql`
 
-    input userArgs {
-    username: String!,
+# Custom user input for reusibility
+  input creds {
+    username: String!
     password: String!
-    }
-
-  type Query{
-    hello  : String!,
-    profile(username : String!,age : Int!) : Profile!
-  }
-
-  type Profile {
-      name : String!,
-      age : Int!
   }
 
   type User {
-    id: ID!
     name: String!
+    pass: String!
   }
 
-  type Error {
-    message: String
-  }
-
-  type RegisterResponse {
-    errors: [Error]
-    status: Int!
+  type Query {
+    hello(name: String): String!
   }
 
   type Mutation {
-    register: RegisterResponse!,
-    login(creds : userArgs ) : Boolean!
+    login(creds : creds): User!
   }
 `;
 
 // resolver
 const resolvers = {
   Query: {
-    hello: () => "hello graphql !!",
-    profile : ()=>({
-        name:"bittu",
-        age:25
-    })
-
+    hello: (parent, args) => {
+      console.log(args);
+      return `hello ${args.name}`;
+    },
   },
   Mutation: {
-    register: () => ({
-      errors: [{message: " Sorry error"}],
-      status: 200 ,
-    }),
-    login : () => true 
-  },
+    //   using arguments given to login
+    login: (parent,{creds}) => {
+       return   {
+         name : creds.username,
+         pass:creds.password
+        }
+    },
+  } 
+  
 };
 
 // server instance
