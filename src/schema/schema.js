@@ -1,9 +1,7 @@
 const {
   GraphQLObjectType,
-  GraphQLString,
   GraphQLSchema,
   GraphQLID,
-  GraphQLInt,
 } = require("graphql");
  
 const AuthorType = require("./AuthorType")
@@ -13,7 +11,7 @@ const { books,authors } = require("../data")
 
 const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
-  fields: {
+  fields: { 
     book: {
       type: BookType,
       args: {
@@ -21,7 +19,7 @@ const RootQuery = new GraphQLObjectType({
       },
       resolve(parent, {id}) {
         // resolver function for query Book"
-        return books.find( book =>book.id==id );
+        return books.find( book => book.id==id );
       },
     },
     author : {
@@ -30,7 +28,7 @@ const RootQuery = new GraphQLObjectType({
         id: {type : GraphQLID},
     },
       resolve(parent,{id}){
-        return authors.find( author =>author.id==id )
+        return authors.find( author => author.id==id )
       }
     }
   },
