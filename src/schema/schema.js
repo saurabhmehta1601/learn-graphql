@@ -5,25 +5,11 @@ const {
   GraphQLID,
   GraphQLInt,
 } = require("graphql");
+ 
+const AuthorType = require("./AuthorType")
+const BookType = require("./BookType")
 
-
-const BookType = new GraphQLObjectType({
-  name: "Book",
-  fields: () => ({
-    id: { type: GraphQLID },
-    name: { type: GraphQLString },
-    genre: { type: GraphQLString },
-  }),
-});
-
-const AuthorType = new GraphQLObjectType({
-  name: "Author",
-  fields: () => ({
-    id: { type: GraphQLID },
-    name: { type: GraphQLString },
-    age: { type: GraphQLInt },
-  }),
-});
+const { books,authors } = require("../data") 
 
 const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
@@ -32,23 +18,19 @@ const RootQuery = new GraphQLObjectType({
       type: BookType,
       args: {
         id: { type: GraphQLID },
-        name: { type: GraphQLString },
-        genre: { type: GraphQLString },
       },
-      resolve(parent, {id,name,genre}) {
+      resolve(parent, {id}) {
         // resolver function for query Book"
-        return { id,name,genre };
+        return books.find( book =>book.id==id );
       },
     },
     author : {
       type : AuthorType,
       args : { 
         id: {type : GraphQLID},
-        name: {type : GraphQLString},
-        age: {type : GraphQLInt},
     },
-      resolve(parent,{id,name,age}){
-        return { id,name,age }
+      resolve(parent,{id}){
+        return authors.find( author =>author.id==id )
       }
     }
   },
