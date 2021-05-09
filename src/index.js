@@ -1,20 +1,6 @@
-const {ApolloServer,gql} = require("apollo-server")
+const express  =require("express")
+const app = express()
 
-// graphql schema
-const typeDefs = gql`
-    type Query {
-        hello:String!
-    }
-`
 
-// resolver
-const resolvers = {
-    Query:{
-        hello : () => "hello World !!"
-    }
-}
 
-// server instance 
-const server = new ApolloServer({typeDefs,resolvers})
-
-server.listen().then(({url})=> console.log(`>Apollo server runnning at ${url}`))
+app.listen(4000,()=> console.log('> Express server running on port 4000'))
